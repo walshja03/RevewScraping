@@ -1,0 +1,514 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[10]:
+
+
+from bs4 import BeautifulSoup
+from splinter import Browser
+import time
+import requests
+import pandas as pd
+
+
+# In[221]:
+
+
+executable_path = {'executable_path': 'chromedriver.exe'}
+browser = Browser('chrome', **executable_path, headless=False)
+
+
+# In[133]:
+
+
+#Scrape Bed Bath Reviews
+
+Cities=[]
+Date = []
+Reviews = []
+StarRating = []
+ratings = [1,2,3,4,5]
+
+for r in ratings:
+    print(f'scraping {r}star ratings')
+
+    for i in range(20):
+        if i==0:
+            next
+        else:
+            #declare URL to visit
+            url = f"https://www.consumeraffairs.com/retail/bed_bath.html?page={i}#sort=recent&filter={r}"
+            browser.visit(url)
+
+            #wait
+            time.sleep(0.55)
+
+            #grab the html code of the page
+            html = browser.html
+
+            #parse the html page into a beautiful soup object
+            soup = BeautifulSoup(html, 'html.parser')
+
+            #get the list of all reviews
+            c = soup.find_all('div', class_="js-rvw")
+            #print(len(c))
+
+            if len(c)==0:
+                print(f'done:{len(Date)} total reviews scraped')
+                break
+            else:
+                print(f'scraping {len(c)} reviews')
+                for i in range(len(c)):
+                    # add the dates of the reviews to the dates list
+                    try:
+                        Date.append(c[i].find_all('div',class_="rvw-bd")[0].find('span').text)
+                    except:
+                        Date.append('No_DATE_FOUND')
+                    try:
+                        Cities.append(c[i].find_all('strong')[0].text)
+                    except:
+                        Cities.append('No_CITY_FOUND')
+                    try: 
+                        Reviews.append(c[i].find_all('p')[1].text)
+                    except:
+                        Reviews.append('No_REVIEW_FOUND')
+                    StarRating.append(r)
+
+
+# In[171]:
+
+
+#Make Dataframe
+df_all= pd.DataFrame({'Date':Date,'City':Cities,'Review':Reviews,'Stars':StarRating})
+
+#parse out the date
+df_all[['delete','Dt']] = df_all['Date'].str.split(":",n=1,expand=True)
+
+#Separate Reviewer from City and State
+df_all[['reviewer','City/St']]=df_all['City'].str.split(" of ", n=1,expand=True)
+
+#drop unnecessary columns
+df_all.drop(columns =['Date','City','delete','reviewer'], inplace=True)
+
+#Separate City and State
+df_all[['City','State']]=df_all['City/St'].str.split(",",n=1,expand=True)
+
+#Drop any reviews with null values
+df_all.dropna(inplace=True)
+
+#save csv
+# df_all.to_csv('BBRev2.csv')
+
+
+# In[204]:
+
+
+#Scrape Target Reviews
+
+Cities=[]
+Date = []
+Reviews = []
+StarRating = []
+ratings = [1,2,3,4,5]
+
+for r in ratings:
+    print(f'scraping {r}star ratings')
+
+    for i in range(20):
+        if i==0:
+            next
+        else:
+            #declare URL to visit
+            url = f"https://www.consumeraffairs.com/retail/target_stores.htm?page={i}#sort=top_reviews&filter={r}"
+            browser.visit(url)
+
+            #wait
+            time.sleep(0.55)
+
+            #grab the html code of the page
+            html = browser.html
+
+            #parse the html page into a beautiful soup object
+            soup = BeautifulSoup(html, 'html.parser')
+
+            #get the list of all reviews
+            c = soup.find_all('div', class_="js-rvw")
+            #print(len(c))
+
+            if len(c)==0:
+                print(f'done:{len(Date)} total reviews scraped')
+                break
+            else:
+                print(f'scraping {len(c)} reviews')
+                for i in range(len(c)):
+                    # add the dates of the reviews to the dates list
+                    try:
+                        Date.append(c[i].find_all('div',class_="rvw-bd")[0].find('span').text)
+                    except:
+                        Date.append('No_DATE_FOUND')
+                    try:
+                        Cities.append(c[i].find_all('strong')[0].text)
+                    except:
+                        Cities.append('No_CITY_FOUND')
+                    try: 
+                        Reviews.append(c[i].find_all('p')[1].text)
+                    except:
+                        Reviews.append('No_REVIEW_FOUND')
+                    StarRating.append(r)
+
+
+# In[206]:
+
+
+#Make Dataframe
+df_target_all= pd.DataFrame({'Date':Date,'City':Cities,'Review':Reviews,'Stars':StarRating})
+
+#parse out the date
+df_target_all[['delete','Dt']] = df_target_all['Date'].str.split(":",n=1,expand=True)
+
+#Separate Reviewer from City and State
+df_target_all[['reviewer','City/St']]=df_target_all['City'].str.split(" of ", n=1,expand=True)
+
+#drop unnecessary columns
+df_target_all.drop(columns =['Date','City','delete','reviewer'], inplace=True)
+
+#Separate City and State
+df_target_all[['City','State']]=df_target_all['City/St'].str.split(",",n=1,expand=True)
+
+#Drop any reviews with null values
+df_target_all.dropna(inplace=True)
+
+#save reviews to csv file
+# df_target_all.to_csv('targetRev.csv')
+
+
+# In[211]:
+
+
+#Scrape Walmart Reviews 1,2,3 Star
+
+Cities=[]
+Date = []
+Reviews = []
+StarRating = []
+ratings = [1,2,3]
+
+for r in ratings:
+    print(f'scraping {r}star ratings')
+
+    for i in range(20):
+        if i==0:
+            next
+        else:
+            #declare URL to visit
+            url = f"https://www.consumeraffairs.com/retail/walmart.htm?page={i}#sort=top_reviews&filter={r}"
+            browser.visit(url)
+
+            #wait
+            time.sleep(0.55)
+
+            #grab the html code of the page
+            html = browser.html
+
+            #parse the html page into a beautiful soup object
+            soup = BeautifulSoup(html, 'html.parser')
+
+            #get the list of all reviews
+            c = soup.find_all('div', class_="js-rvw")
+            #print(len(c))
+
+            if len(c)==0:
+                print(f'done:{len(Date)} total reviews scraped')
+                break
+            else:
+                print(f'scraping {len(c)} reviews')
+                for i in range(len(c)):
+                    # add the dates of the reviews to the dates list
+                    try:
+                        Date.append(c[i].find_all('div',class_="rvw-bd")[0].find('span').text)
+                    except:
+                        Date.append('No_DATE_FOUND')
+                    try:
+                        Cities.append(c[i].find_all('strong')[0].text)
+                    except:
+                        Cities.append('No_CITY_FOUND')
+                    try: 
+                        Reviews.append(c[i].find_all('p')[1].text)
+                    except:
+                        Reviews.append('No_REVIEW_FOUND')
+                    StarRating.append(r)
+
+
+# In[215]:
+
+
+#Scrape Walmart Reviews 4,5 Star
+ratings = [4,5]
+
+for r in ratings:
+    print(f'scraping {r}star ratings')
+
+    for i in range(20):
+        if i==0:
+            next
+        else:
+            #declare URL to visit
+            url = f"https://www.consumeraffairs.com/retail/walmart.htm?page={i}#sort=top_reviews&filter={r}"
+            browser.visit(url)
+
+            #wait
+            time.sleep(0.55)
+
+            #grab the html code of the page
+            html = browser.html
+
+            #parse the html page into a beautiful soup object
+            soup = BeautifulSoup(html, 'html.parser')
+
+            #get the list of all reviews
+            c = soup.find_all('div', class_="js-rvw")
+            #print(len(c))
+
+            if len(c)==0:
+                print(f'done:{len(Date)} total reviews scraped')
+                break
+            else:
+                print(f'scraping {len(c)} reviews')
+                for i in range(len(c)):
+                    # add the dates of the reviews to the dates list
+                    try:
+                        Date.append(c[i].find_all('div',class_="rvw-bd")[0].find('span').text)
+                    except:
+                        Date.append('No_DATE_FOUND')
+                    try:
+                        Cities.append(c[i].find_all('strong')[0].text)
+                    except:
+                        Cities.append('No_CITY_FOUND')
+                    try: 
+                        Reviews.append(c[i].find_all('p')[1].text)
+                    except:
+                        Reviews.append('No_REVIEW_FOUND')
+                    StarRating.append(r)
+
+
+# In[217]:
+
+
+#Make Dataframe
+df_walmart_all= pd.DataFrame({'Date':Date,'City':Cities,'Review':Reviews,'Stars':StarRating})
+
+#parse out the date
+df_walmart_all[['delete','Dt']] = df_walmart_all['Date'].str.split(":",n=1,expand=True)
+
+#Separate Reviewer from City and State
+df_walmart_all[['reviewer','City/St']]=df_walmart_all['City'].str.split(" of ", n=1,expand=True)
+
+#drop unnecessary columns
+df_walmart_all.drop(columns =['Date','City','delete','reviewer'], inplace=True)
+
+#Separate City and State
+df_walmart_all[['City','State']]=df_walmart_all['City/St'].str.split(",",n=1,expand=True)
+
+#Drop any reviews with null values
+df_walmart_all.dropna(inplace=True)
+
+#Add retailer column
+df_walmart_all['Retailer']='Walmart'
+
+#save to csv file
+# df_walmart_all.to_csv('WalmartRev.csv')
+
+
+# In[222]:
+
+
+#scrape Williams Sonoma pages
+
+Cities=[]
+Date = []
+Reviews = []
+StarRating = []
+ratings = [1,2,3,4,5]
+
+for r in ratings:
+    print(f'scraping {r}star ratings')
+
+    for i in range(20):
+        if i==0:
+            next
+        else:
+            #declare URL to visit
+            url = f"https://www.consumeraffairs.com/homeowners/williams_sonoma.html?page={i}#sort=recent&filter={r}"
+            browser.visit(url)
+
+            #wait
+            time.sleep(0.55)
+
+            #grab the html code of the page
+            html = browser.html
+
+            #parse the html page into a beautiful soup object
+            soup = BeautifulSoup(html, 'html.parser')
+
+            #get the list of all reviews
+            c = soup.find_all('div', class_="js-rvw")
+            #print(len(c))
+
+            if len(c)==0:
+                print(f'done:{len(Date)} total reviews scraped')
+                break
+            else:
+                print(f'scraping {len(c)} reviews')
+                for i in range(len(c)):
+                    # add the dates of the reviews to the dates list
+                    try:
+                        Date.append(c[i].find_all('div',class_="rvw-bd")[0].find('span').text)
+                    except:
+                        Date.append('No_DATE_FOUND')
+                    try:
+                        Cities.append(c[i].find_all('strong')[0].text)
+                    except:
+                        Cities.append('No_CITY_FOUND')
+                    try: 
+                        Reviews.append(c[i].find_all('p')[1].text)
+                    except:
+                        Reviews.append('No_REVIEW_FOUND')
+                    StarRating.append(r)
+
+
+# In[224]:
+
+
+#Make Dataframe
+df_williams_all= pd.DataFrame({'Date':Date,'City':Cities,'Review':Reviews,'Stars':StarRating})
+
+#parse out the date
+df_williams_all[['delete','Dt']] = df_williams_all['Date'].str.split(":",n=1,expand=True)
+
+#Separate Reviewer from City and State
+df_williams_all[['reviewer','City/St']]=df_williams_all['City'].str.split(" of ", n=1,expand=True)
+
+#drop unnecessary columns
+df_williams_all.drop(columns =['Date','City','delete','reviewer'], inplace=True)
+
+#Separate City and State
+df_williams_all[['City','State']]=df_williams_all['City/St'].str.split(",",n=1,expand=True)
+
+#Drop any reviews with null values
+df_williams_all.dropna(inplace=True)
+
+# add retailer column
+df_williams_all['Retailer']='Williams Sonoma'
+
+# save as csv
+# df_williams_all.to_csv('WillamsSonomaRev.csv')
+
+
+# In[12]:
+
+
+#read in CSV
+df_walmart = pd.read_csv('WalmartRev.csv')
+
+#Strip spaces in front of the date
+df_walmart['Dt']=df_walmart['Dt'].str.lstrip()
+
+#expand on the first space
+df_walmart[['month','day_year']]=df_walmart['Dt'].str.split(" ",n=1,expand=True)
+
+#Replace Months with corresponding numbers
+df_walmart['month'].replace({'Jan.':1, 'Dec.':12, 'Nov.':11, 'Oct.':10, 'Sept.':9, 'Aug.':8, 'July':7, 'June':6,
+       'May':5, 'April':4, 'March':3, 'Feb.':2}, inplace=True)
+
+#split out day and year
+df_walmart[['day','year']]=df_walmart['day_year'].str.split(",",n=1,expand=True)
+
+#stitch date back together
+df_walmart['Date']=pd.to_datetime(df_walmart[["year","month","day"]])
+
+#limit df to dates since March 2020
+final_walmart_df = df_walmart[df_walmart['Date']>='2020-03-01']
+
+#delete unnecessary columns
+final_walmart_df.drop(columns = ['Unnamed: 0','Dt','month','day_year','day','year'], inplace = True)
+
+final_walmart_df
+
+
+# In[33]:
+
+
+#read in CSV
+df_target = pd.read_csv('targetRev.csv')
+
+#add retailer column
+df_target['Retailer']='Target'
+
+#Strip spaces in front of the date
+df_target['Dt']=df_target['Dt'].str.lstrip()
+
+#expand on the first space
+df_target[['month','day_year']]=df_target['Dt'].str.split(" ",n=1,expand=True)
+
+#Replace Months with corresponding numbers
+df_target['month'].replace({'Jan.':1, 'Dec.':12, 'Nov.':11, 'Oct.':10, 'Sept.':9, 'Aug.':8, 'July':7, 'June':6,
+       'May':5, 'April':4, 'March':3, 'Feb.':2}, inplace=True)
+
+#split out day and year
+df_target[['day','year']]=df_target['day_year'].str.split(",",n=1,expand=True)
+
+#stitch date back together
+df_target['Date']=pd.to_datetime(df_target[["year","month","day"]])
+
+#limit df to dates since March 2020
+final_target_df = df_target[df_target['Date']>='2020-03-01']
+
+#delete unnecessary columns
+final_target_df.drop(columns = ['Unnamed: 0','Dt','month','day_year','day','year'], inplace = True)
+
+# final_target_df
+
+
+# In[11]:
+
+
+#read in CSV
+df_bedbath = pd.read_csv('BBRev2.csv')
+
+#add retailer column
+df_bedbath['Retailer']='Bed Bath and Beyond'
+
+#Strip spaces in front of the date
+df_bedbath['Dt']=df_bedbath['Dt'].str.lstrip()
+
+#expand on the first space
+df_bedbath[['month','day_year']]=df_bedbath['Dt'].str.split(" ",n=1,expand=True)
+
+#Replace Months with corresponding numbers
+df_bedbath['month'].replace({'Jan.':1, 'Dec.':12, 'Nov.':11, 'Oct.':10, 'Sept.':9, 'Aug.':8, 'July':7, 'June':6,
+       'May':5, 'April':4, 'March':3, 'Feb.':2}, inplace=True)
+
+#split out day and year
+df_bedbath[['day','year']]=df_bedbath['day_year'].str.split(",",n=1,expand=True)
+
+#stitch date back together
+df_bedbath['Date']=pd.to_datetime(df_bedbath[["year","month","day"]])
+
+#limit df to dates since March 2020
+final_bedbath_df = df_bedbath[df_bedbath['Date']>='2020-03-01']
+
+#delete unnecessary columns
+final_bedbath_df.drop(columns = ['Unnamed: 0','Dt','month','day_year','day','year'], inplace = True)
+
+final_bedbath_df
+
+
+# In[38]:
+
+
+#put reviews into a single df
+all_3_df = pd.concat([final_bedbath_df,final_target_df,final_walmart_df])
+
+#create CSV of scraped and prepared data for Walmart, Target, and Bed Bath and Beyond
+# all_3_df.to_csv('RetailersCombined.csv')
+
